@@ -416,10 +416,7 @@ control 'core-plans-busybox-works' do
     "zcip" => {},
   }
   
-  # subset = full_suite.slice("zcat", "zcip")
-  subset = full_suite.select { |key, value| key.to_s.match(/^[a-z].*$/) }
-  
-  subset.each do |binary_name, value|
+  full_suite.each do |binary_name, value|
     command_suffix = value[:command_suffix] || "--help"
     io = value[:io] || "stderr"
     command_full_path = File.join(plan_installation_directory.stdout.strip, "bin", binary_name)
@@ -435,15 +432,14 @@ control 'core-plans-busybox-works' do
     "test"  => {command_suffix: "1 == 1"},
     "true"  => {},
   }.each do |binary_name, value|
-    command_prefix = value[:command_prefix] || ""
     command_suffix = value[:command_suffix] || "--help"
     pattern = value[:pattern] || /BusyBox v#{plan_pkg_version}/
     exit_pattern = value[:exit_pattern] || /^0$/
     command_full_path = File.join(plan_installation_directory.stdout.strip, "bin", binary_name)
-    describe command("#{command_prefix} #{command_full_path} #{command_suffix}") do
-    its('exit_status') { should cmp exit_pattern }
-    its('stdout') { should be_empty }
-    its('stderr') { should be_empty }
+    describe command("#{command_full_path} #{command_suffix}") do
+      its('exit_status') { should cmp exit_pattern }
+      its('stdout') { should be_empty }
+      its('stderr') { should be_empty }
     end
   end
 end
