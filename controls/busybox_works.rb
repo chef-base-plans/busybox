@@ -17,7 +17,6 @@ control 'core-plans-busybox-works' do
   describe plan_installation_directory do
     its('exit_status') { should eq 0 }
     its('stdout') { should_not be_empty }
-    its('stderr') { should be_empty }
   end
   
   plan_pkg_version = plan_installation_directory.stdout.split("/")[5]
@@ -417,12 +416,11 @@ control 'core-plans-busybox-works' do
   }
   
   full_suite.each do |binary_name, value|
-    command_suffix = value[:command_suffix] || "--help"
-    io = value[:io] || "stderr"
+    command_suffix = value.has_key?(:command_suffix) ? "#{value[:command_suffix]} 2>\&1" : "--help 2>\&1"
     command_full_path = File.join(plan_installation_directory.stdout.strip, "bin", binary_name)
     describe command("#{command_full_path} #{command_suffix}") do
       its('exit_status') { should eq 0 }
-      its(io) { should match /BusyBox v#{plan_pkg_version}/ }
+      its('stdout') { should match /BusyBox v#{plan_pkg_version}/ }
     end
   end
 
@@ -432,14 +430,13 @@ control 'core-plans-busybox-works' do
     "test"  => {command_suffix: "1 == 1"},
     "true"  => {},
   }.each do |binary_name, value|
-    command_suffix = value[:command_suffix] || "--help"
+    command_suffix = value.has_key?(:command_suffix) ? "#{value[:command_suffix]} 2>\&1" : "--help 2>\&1"
     pattern = value[:pattern] || /BusyBox v#{plan_pkg_version}/
     exit_pattern = value[:exit_pattern] || /^0$/
     command_full_path = File.join(plan_installation_directory.stdout.strip, "bin", binary_name)
     describe command("#{command_full_path} #{command_suffix}") do
       its('exit_status') { should cmp exit_pattern }
       its('stdout') { should be_empty }
-      its('stderr') { should be_empty }
     end
   end
 end
