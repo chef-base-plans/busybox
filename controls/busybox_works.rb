@@ -8,17 +8,17 @@ control 'core-plans-busybox-works' do
   title 'Ensure busybox works as expected'
   desc '
   Verify busybox by ensuring that
-  (1) its installation directory exists 
+  (1) its installation directory exists
   (2) all binaries return the expected version, apart from
   "true", "false", and "test" which do not return stdout
   '
-  
+
   plan_installation_directory = command("hab pkg path #{plan_origin}/#{plan_name}")
   describe plan_installation_directory do
     its('exit_status') { should eq 0 }
     its('stdout') { should_not be_empty }
   end
-  
+
   plan_pkg_version = plan_installation_directory.stdout.split("/")[5]
   full_suite = {
     "[" => {},
@@ -91,7 +91,6 @@ control 'core-plans-busybox-works' do
     "du" => {},
     "dumpkmap" => {},
     "dumpleases" => {},
-    "echo" => {},
     "ed" => {},
     "egrep" => {},
     "eject" => {},
@@ -244,7 +243,6 @@ control 'core-plans-busybox-works' do
     "nsenter" => {},
     "nslookup" => {},
     "ntpd" => {},
-    "nuke" => {},
     "od" => {},
     "openvt" => {},
     "partprobe" => {},
@@ -414,7 +412,7 @@ control 'core-plans-busybox-works' do
     "zcat" => {},
     "zcip" => {},
   }
-  
+
   full_suite.each do |binary_name, value|
     command_suffix = value.has_key?(:command_suffix) ? "#{value[:command_suffix]} 2>\&1" : "--help 2>\&1"
     command_full_path = File.join(plan_installation_directory.stdout.strip, "bin", binary_name)
@@ -437,6 +435,17 @@ control 'core-plans-busybox-works' do
     describe command("#{command_full_path} #{command_suffix}") do
       its('exit_status') { should cmp exit_pattern }
       its('stdout') { should be_empty }
+    end
+  end
+
+  {
+    "echo" => {},
+  }.each do |binary_name, value|
+    command_suffix = value.has_key?(:command_suffix) ? "#{value[:command_suffix]} 2>\&1" : "--help 2>\&1"
+    command_full_path = File.join(plan_installation_directory.stdout.strip, "bin", binary_name)
+    describe command("#{command_full_path} #{command_suffix}") do
+      its('exit_status') { should eq 0 }
+      its('stdout') { should match /--help/ }
     end
   end
 end
