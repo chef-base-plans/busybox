@@ -7,10 +7,10 @@ control 'core-plans-busybox-exists' do
   impact 1.0
   title 'Ensure busybox exists'
   desc '
-  Verify busybox by ensuring bin/head 
+  Verify busybox by ensuring bin/head
   (1) exists and
   (2) is executable'
-  
+
   plan_installation_directory = command("hab pkg path #{plan_origin}/#{plan_name}")
   describe plan_installation_directory do
     its('exit_status') { should eq 0 }
@@ -242,7 +242,6 @@ control 'core-plans-busybox-exists' do
     "nsenter",
     "nslookup",
     "ntpd",
-    "nuke",
     "od",
     "openvt",
     "partprobe",
